@@ -8,16 +8,16 @@ const init = async() => {
     await client.connect();
     console.log('connected to database');
     const SQL = `
+        DROP TABLE IF EXISTS vacations;
         DROP TABLE IF EXISTS users;
         DROP TABLE IF EXISTS places;
-        DROP TABLE IF EXISTS vacations;
         CREATE TABLE users(
             id SERIAL PRIMARY KEY,
             name VARCHAR(50)
         );
         CREATE TABLE places(
             id SERIAL PRIMARY KEY,
-            place VARCHAR(50)
+            name VARCHAR(50)
         );
         CREATE TABLE vacations(
             id SERIAL PRIMARY KEY,
@@ -25,6 +25,19 @@ const init = async() => {
             user_id INTEGER REFERENCES users(id) NOT NULL,
             created_at TIMESTAMP DEFAULT now(),
             note VARCHAR(100) NOT NULL
+        );
+        INSERT INTO users(name) VALUES ('joe');
+        INSERT INTO users(name) VALUES ('shelly');
+        INSERT INTO users(name) VALUES ('rigby');
+        INSERT INTO places(name) VALUES ('ecuador');
+        INSERT INTO places(name) VALUES ('france');
+        INSERT INTO places(name) VALUES ('uk');
+        INSERT INTO places(name) VALUES ('new zealand');
+        INSERT INTO places(name) VALUES ('chile');
+        INSERT INTO vacations(user_id, place_id, note) VALUES (
+            (SELECT id FROM users WHERE name='joe'),
+            (SELECT id FROM places WHERE name='france'),
+            'fun fun fun'
         );
     `;
     await client.query(SQL);
