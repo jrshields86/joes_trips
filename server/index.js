@@ -1,8 +1,86 @@
 const pg = require('pg');
 const client = new pg.Client('postgres://localhost/joe_vacations_db');
+const cors = require('cors');
 const express = require('express');
 const app = express();
 app.use(express.json());
+app.use(cors());
+
+app.get('/api/users', async(req, res, next) => {
+    try {
+        const SQL = `
+            SELECT *
+            FROM users
+        `;
+        const response = await client.query(SQL);
+        res.send(response.rows)
+    } catch (error) {
+      next(error)  
+    }
+});
+
+app.get('/api/places', async(req, res, next) => {
+    try {
+        const SQL = `
+            SELECT *
+            FROM places
+        `;
+        const response = await client.query(SQL);
+        res.send(response.rows)
+    } catch (error) {
+      next(error)  
+    }
+});
+
+app.get('/api/vacations', async(req, res, next) => {
+    try {
+        const SQL = `
+            SELECT *
+            FROM vacations
+        `;
+        const response = await client.query(SQL);
+        res.send(response.rows)
+    } catch (error) {
+      next(error)  
+    }
+});
+
+app.post('/api/vacations', async(req, res, next) => {
+    console.log(req)
+    try {
+        const SQL = `
+            INSERT INTO vacations(user_id, place_id, note) VALUES($1, $2, $3) RETURNING *
+        `;
+        const response = await client.query(SQL, [req.body.user_id, req.body.place_id, req.body.note]);
+        res.send(response.rows[0]);
+    } catch (error) {
+      next(error);  
+    }
+});
+
+app.post('/api/users', async(req,res,next) => {
+    try {
+        const SQL = `
+            INSERT INTO users(name) VALUES ($1) RETURNING *
+        `;
+        const response = await client.query(SQL, [req.body.name]);
+        res.send(response.rows[0]);
+    } catch (error) {
+      next(error);  
+    }
+});
+
+app.delete('/api/vacations/:id', async(req, res, next) => {
+    try {
+        const SQL = `
+            DELETE FROM vacations WHERE id=$1
+        `;
+        await client.query(SQL, [req.params.id]);
+        res.sendStatus(204);
+    } catch (error) {
+      next(error);  
+    }
+});
 
 const init = async() => {
     await client.connect();
